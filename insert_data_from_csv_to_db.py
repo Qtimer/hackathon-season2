@@ -3,6 +3,7 @@ from numpy import empty
 import pandas as pd
 import os
 import csv
+from datetime import datetime, timedelta
 
 to_import_file_name = 'data-devclub.csv'
 initial_xml_file_name = 'data-devclub-1.xml'  # for the schema
@@ -46,10 +47,14 @@ try:
             # 1. dup data
             # 2. empid=passport_no
             # 3. left the comp (status=2)
+            # 4. DEPT = airhostress, pilot, steward
+            # 5. work exp. more than 3 years
             condition_1 = False  # โจทย์ไม่เคลียว่า dup คึอแค่ไหน
             condition_2 = row[0] == row[1]
             condition_3 = f'{row[10]}'.isnumeric() and int(row[10]) == 3
-            if condition_1 or condition_2 or condition_3:
+            condition_4 = row[8] not in ['Airhostess', 'Pilot', 'Steward']
+            condition_5 = (datetime.now() - datetime.strptime(row[7], '%d-%M-%Y')) < timedelta(days=365*3)
+            if condition_1 or condition_2 or condition_3 or condition_4 or condition_5:
                 continue
             cur.execute(sql, row)
     con.commit()
@@ -77,4 +82,4 @@ except Exception as e:
     traceback.print_exc()
 finally:
     con.close()
-    os.system('rm -f employee.db')
+#     os.system('rm -f employee.db')
